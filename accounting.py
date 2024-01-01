@@ -56,31 +56,6 @@ def clean_special_characters(name):
     return name.replace('å', 'a').replace('ä', 'a').replace('ö', 'o').replace('Å', 'A').replace('Ä', 'A').replace('Ö', 'O').replace('ü', 'u').replace('Ü', 'U').replace('ë', 'e').replace('é', 'e')
 
 
-def handle_jawbreaker_se_old(row):
-    source = 'jawbreaker.se'
-    date = parse_date(row['\ufeff"Datum"'])
-    buyer = row['Namn']
-    brutto = row['Brutto']
-    avgift = row['Avgift']
-
-    countryCode = row['Köparens landskod']
-    country = row['Land']
-
-    bruttoNumber = parse_to_positive_number(brutto)
-    avgiftNumberPositive = parse_to_positive_number(avgift)
-    vat = round(bruttoNumber * 0.2, 2)
-    # print('')
-    if (countryCode == 'SE'):
-        summarize_sale(date, buyer, bruttoNumber,
-                       avgiftNumberPositive, source, countryCode, country, vat)
-    elif (is_eu(countryCode)):
-        summarize_sale(date, buyer, bruttoNumber,
-                       avgiftNumberPositive, source, countryCode, country, vat)
-    else:
-        summarize_sale(date, buyer, bruttoNumber,
-                       avgiftNumberPositive, source, countryCode, country, 0)
-
-
 def sale_sweden(date, buyer, brutto, avgift, source):
     moms = brutto * 0.2
     netto = brutto * 0.8
