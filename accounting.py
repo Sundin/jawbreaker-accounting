@@ -57,8 +57,8 @@ def clean_special_characters(name):
 
 
 def sale_sweden(date, buyer, brutto, avgift, source):
-    moms = brutto * 0.2
-    netto = brutto * 0.8
+    moms = round(brutto * 0.2, 2)
+    netto = round(brutto * 0.8, 2)
     with open('paypal.si', 'a') as f:
         f.write('#VER "" "" {} "{} - {}"\n'.format(date, source, buyer))
         f.write('{\n')
