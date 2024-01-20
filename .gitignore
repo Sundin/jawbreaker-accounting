@@ -1,0 +1,6 @@
+*.si
+*.txt
+*.bak
+*.sru
+*.CSV
+.DS_Store
