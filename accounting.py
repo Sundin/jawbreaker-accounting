@@ -108,6 +108,7 @@ def sale_outside_eu(date, buyer, brutto, avgift, source):
 def handle_sale(row, source):
     if (row['Valuta'] != 'SEK'):
         print("!!! Sale for unknown currency: " + row['Namn'])
+        print("")
         return
     # print(row)
     # print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
@@ -331,6 +332,7 @@ def handle_kreditering(row):
     else:
         print("!!!!! UNKNOWN TRANSACTION TYPE (KREDITERING) !!!!!!")
         print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
+        print("")
 
 def handle_debitering(row):
     if (row['Ärende'].__contains__('Discogs') or row['Objektstitel'].__contains__('Discogs')) and row['Typ'].__contains__('Partneravgift'):
@@ -344,7 +346,7 @@ def handle_debitering(row):
     else:
         print("!!!!! UNKNOWN TRANSACTION TYPE (DEBITERING) !!!!!!")
         print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
-
+        print("")
 
 # PROGRAM START
 
