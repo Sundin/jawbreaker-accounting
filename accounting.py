@@ -233,8 +233,8 @@ def handle_utbetalning(row):
 
 
 def refund_sweden(date, buyer, brutto):
-    moms = brutto * 0.2
-    netto = brutto * 0.8
+    moms = round(brutto * 0.2)
+    netto = round(brutto * 0.8)
     with open('paypal.si', 'a') as f:
         f.write('#VER "" "" {} "Refund - {}"\n'.format(date, buyer))
         f.write('{\n')
@@ -246,8 +246,8 @@ def refund_sweden(date, buyer, brutto):
 
 
 def refund_eu(date, buyer, brutto):
-    moms = brutto * 0.2
-    netto = brutto * 0.8
+    moms = round(brutto * 0.2)
+    netto = round(brutto * 0.8)
     with open('paypal.si', 'a') as f:
         f.write('#VER "" "" {} "Refund - {}"\n'.format(date, buyer))
         f.write('{\n')
