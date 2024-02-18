@@ -3,4 +3,5 @@
 *.bak
 *.sru
 *.CSV
+*.csv
 .DS_Store

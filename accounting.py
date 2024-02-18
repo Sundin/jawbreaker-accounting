@@ -37,8 +37,7 @@ def summarize_expense(date, title, fee, vat):
         f.write('\n\n')
         f.close()
 
-# ACCOUNTING
-
+# UTILS
 
 def parse_date(date1):
     splitted = date1.split('.')
@@ -55,6 +54,14 @@ def parse_to_positive_number(input):
 def clean_special_characters(name):
     return name.replace('å', 'a').replace('ä', 'a').replace('ö', 'o').replace('Å', 'A').replace('Ä', 'A').replace('Ö', 'O').replace('ü', 'u').replace('Ü', 'U').replace('ë', 'e').replace('é', 'e')
 
+
+eu_countries = ['BE', 'BG', 'CZ', 'DK', 'DE', 'EE', 'IE', 'EL', 'ES', 'FR', 'HR', 'IT',
+                'CY', 'LV', 'LT', 'LU', 'HU', 'MT', 'NL', 'AT', 'PL', 'PT', 'RO', 'SI', 'SK', 'FI']
+def is_eu(countryCode):
+    return countryCode in eu_countries
+
+
+# ACCOUNTING FUNCTIONS
 
 def sale_sweden(date, buyer, brutto, avgift, source):
     moms = round(brutto * 0.2, 2)
@@ -96,14 +103,6 @@ def sale_outside_eu(date, buyer, brutto, avgift, source):
         f.write('#TRANS 6570 {{ }} {}\n'.format(avgift))
         f.write('}\n')
         f.close()
-
-
-eu_countries = ['BE', 'BG', 'CZ', 'DK', 'DE', 'EE', 'IE', 'EL', 'ES', 'FR', 'HR', 'IT',
-                'CY', 'LV', 'LT', 'LU', 'HU', 'MT', 'NL', 'AT', 'PL', 'PT', 'RO', 'SI', 'SK', 'FI']
-
-
-def is_eu(countryCode):
-    return countryCode in eu_countries
 
 
 def handle_sale(row, source):
@@ -274,9 +273,7 @@ def handle_refund(row):
     brutto = row['Brutto']
     bruttoNumberPositive = parse_to_positive_number(brutto)
     countryCode = row['Köparens landskod']
-    country = row['Land']
 
-    # print('Refund not implemented')
     summarize_fee(date, 'Återbetalning till {}'.format(
         buyer), bruttoNumberPositive)
     if (countryCode == 'SE'):
