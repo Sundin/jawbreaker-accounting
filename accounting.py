@@ -110,17 +110,10 @@ def handle_sale(row, source):
         print("!!! Sale for unknown currency: " + row['Namn'])
         print("")
         return
-    # print(row)
-    # print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
-    # print(row['Brutto'])
-    # print(row['Avgift'])
-    # print(row['Köparens landskod'])
-    # print(row['\ufeff"Datum"'])
     date = parse_date(row['\ufeff"Datum"'])
     buyer = row['Namn']
     brutto = row['Brutto']
     avgift = row['Avgift']
-
     countryCode = row['Köparens landskod']
     country = row['Land']
 
@@ -151,23 +144,18 @@ def handle_webshop(row):
 def handle_bandcamp(row):
     handle_sale(row, 'Bandcamp')
 
-
 def handle_discogs(row):
     handle_sale(row, 'Discogs')
 
 
 def handle_discogs_fee(row):
-    # print('Betalning')
-
     if row['Valuta'] != 'SEK':
         print('Discogs fee - currency {} Not implemented', row['Valuta'])
         return
 
     date = parse_date(row['\ufeff"Datum"'])
     title = '{} - {}'.format(row['Typ'], 'Discogs')
-    # print(title)
 
-    # print(row['Brutto'])
     brutto = row['Brutto']
     avgift = parse_to_positive_number(brutto)
 
@@ -183,18 +171,12 @@ def handle_discogs_fee(row):
 
 
 def handle_bandcamp_subscription(row):
-    # print('Bandcamp subscription')
-
     if row['Valuta'] != 'SEK':
         # ignore, this is handled by the SEK post only
-        # print('Bandcamp subscription - currency {} Not implemented', row['Valuta'])
         return
 
     date = parse_date(row['\ufeff"Datum"'])
     title = 'Bandcamp - Label Account Subscription'
-    # print(title)
-
-    # print(row['Brutto'])
     brutto = row['Brutto']
     avgift = float(brutto.replace(',', '.').replace('−', ''))
     moms = avgift * 0.25
@@ -215,7 +197,6 @@ def handle_bandcamp_subscription(row):
 
 
 def handle_utbetalning(row):
-    # print('Egen överföring')
     date = parse_date(row['\ufeff"Datum"'])
     title = 'PayPal till SEB'
     brutto = row['Brutto']
