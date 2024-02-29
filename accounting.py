@@ -114,7 +114,8 @@ def handle_sale(row, source):
     buyer = row['Namn']
     brutto = row['Brutto']
     avgift = row['Avgift']
-    countryCode = row['Köparens landskod']
+    #countryCode = row['Köparens landskod']
+    countryCode = row['Landskod']
     country = row['Land']
 
     bruttoNumber = parse_to_positive_number(brutto)
@@ -254,7 +255,8 @@ def handle_refund(row):
     buyer = row['Namn']
     brutto = row['Brutto']
     bruttoNumberPositive = parse_to_positive_number(brutto)
-    countryCode = row['Köparens landskod']
+    #countryCode = row['Köparens landskod']
+    countryCode = row['Landskod']
 
     summarize_fee(date, 'Återbetalning till {}'.format(
         buyer), bruttoNumberPositive)
@@ -294,7 +296,7 @@ def handle_digital_sales(row, source, buyer):
     digital_sale(date, buyer, bruttoNumber, source)
     summarize_digital_sale(date, bruttoNumber, buyer)
 
-def handle_kreditering(row):
+def handle_kreditering_jawbreaker(row):
     if row['Ärende'].__contains__('Discogs'):
         handle_discogs(row)
     elif row['Typ'].__contains__('Allmän betalning') or row['Typ'].__contains__('Mobilbetalning'):
@@ -315,7 +317,15 @@ def handle_kreditering(row):
         print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
         print("")
 
-def handle_debitering(row):
+def handle_kreditering_turborock(row):
+    if row['Typ'].__contains__('Express Checkout-betalning'):
+        handle_sale(row, 'Turborock.se')
+    else:
+        print("!!!!! UNKNOWN TRANSACTION TYPE (KREDITERING) !!!!!!")
+        print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
+        print("")
+
+def handle_debitering_jawbreaker(row):
     if (row['Ärende'].__contains__('Discogs') or row['Objektstitel'].__contains__('Discogs')) and row['Typ'].__contains__('Partneravgift'):
         handle_discogs_fee(row)
     elif row['Typ'].__contains__('Återbetalning'):
@@ -343,9 +353,19 @@ with open('Download.CSV', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         if row['Saldoeffekt'].__contains__('Kreditering'):
-            handle_kreditering(row)
+            if row['Till mejladress'] == 'info@jawbreaker.se':
+                handle_kreditering_jawbreaker(row)
+            elif row['Till mejladress'] == 'heavymetal@turborock.se' or row['Till mejladress'] == 'linniface@hotmail.com':
+                handle_kreditering_turborock(row)
+            else:
+                print("!!!!! NOT IMPLEMENTED: {} !!!!!!".format(row['Till mejladress']))
         elif row['Saldoeffekt'].__contains__('Debitering'):
-            handle_debitering(row)
+            if row['Till mejladress'] == 'info@jawbreaker.se':
+                handle_debitering_jawbreaker(row)
+            elif row['Till mejladress'] == 'heavymetal@turborock.se':
+                print("NOT IMPLEMENTED")
+            else:
+                print("!!!!! NOT IMPLEMENTED: {} !!!!!!".format(row['Till mejladress']))
         else:
             print("!!!!! UNKNOWN TRANSACTION !!!!!!")
             print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
