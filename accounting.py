@@ -60,62 +60,82 @@ eu_countries = ['BE', 'BG', 'CZ', 'DK', 'DE', 'EE', 'IE', 'EL', 'ES', 'FR', 'HR'
 def is_eu(countryCode):
     return countryCode in eu_countries
 
+PAYPAL_ACCOUNT_SEK = '1933'
+PAYPAL_ACCOUNT_EURO = '1935'
+
+EURO_TO_SEK_EXCHANGE_RATE = 11.63
 
 # ACCOUNTING FUNCTIONS
 
-def sale_sweden(date, buyer, brutto, avgift, source):
+def sale_sweden(date, buyer, brutto, avgift, source, currency):
+    account = PAYPAL_ACCOUNT_SEK
+    if (currency == 'EUR'):
+        account = PAYPAL_ACCOUNT_EURO
+        brutto = round(brutto * EURO_TO_SEK_EXCHANGE_RATE, 2)
     moms = round(brutto * 0.2, 2)
     netto = round(brutto * 0.8, 2)
+
     with open('paypal.si', 'a') as f:
         f.write('#VER "" "" {} "{} - {}"\n'.format(date, source, buyer))
         f.write('{\n')
-        f.write('#TRANS 1933 {{ }} {}\n'.format(brutto))
+        f.write('#TRANS {} {{ }} {}\n'.format(account, brutto))
         f.write('#TRANS 3001 {{ }} -{}\n'.format(netto))
         f.write('#TRANS 2610 {{ }} -{}\n'.format(moms))
-        f.write('#TRANS 1933 {{ }} -{}\n'.format(avgift))
+        f.write('#TRANS {} {{ }} -{}\n'.format(account, avgift))
         f.write('#TRANS 6570 {{ }} {}\n'.format(avgift))
         f.write('}\n')
         f.close()
 
 
-def sale_eu(date, buyer, brutto, avgift, source):
+def sale_eu(date, buyer, brutto, avgift, source, currency):
+    account = PAYPAL_ACCOUNT_SEK
+    if (currency == 'EUR'):
+        account = PAYPAL_ACCOUNT_EURO
+        brutto = round(brutto * EURO_TO_SEK_EXCHANGE_RATE, 2)
     moms = round(brutto * 0.2, 2)
     netto = round(brutto * 0.8, 2)
+
     with open('paypal.si', 'a') as f:
         f.write('#VER "" "" {} "{} - {}"\n'.format(date, source, buyer))
         f.write('{\n')
-        f.write('#TRANS 1933 {{ }} {}\n'.format(brutto))
+        f.write('#TRANS {} {{ }} {}\n'.format(account, brutto))
         f.write('#TRANS 3106 {{ }} -{}\n'.format(netto))
         f.write('#TRANS 2610 {{ }} -{}\n'.format(moms))
-        f.write('#TRANS 1933 {{ }} -{}\n'.format(avgift))
+        f.write('#TRANS {} {{ }} -{}\n'.format(account, avgift))
         f.write('#TRANS 6570 {{ }} {}\n'.format(avgift))
         f.write('}\n')
         f.close()
 
 
-def sale_outside_eu(date, buyer, brutto, avgift, source):
+def sale_outside_eu(date, buyer, brutto, avgift, source, currency):
+    account = PAYPAL_ACCOUNT_SEK
+    if (currency == 'EUR'):
+        account = PAYPAL_ACCOUNT_EURO
+        brutto = round(brutto * EURO_TO_SEK_EXCHANGE_RATE, 2)
+
     with open('paypal.si', 'a') as f:
         f.write('#VER "" "" {} "{} - {}"\n'.format(date, source, buyer))
         f.write('{\n')
-        f.write('#TRANS 1933 {{ }} {}\n'.format(brutto))
+        f.write('#TRANS {} {{ }} {}\n'.format(account, brutto))
         f.write('#TRANS 3105 {{ }} -{}\n'.format(brutto))
-        f.write('#TRANS 1933 {{ }} -{}\n'.format(avgift))
+        f.write('#TRANS {} {{ }} -{}\n'.format(account, avgift))
         f.write('#TRANS 6570 {{ }} {}\n'.format(avgift))
         f.write('}\n')
         f.close()
 
 
 def handle_sale(row, source):
-    if (row['Valuta'] != 'SEK'):
-        print("!!! Sale for unknown currency: " + row['Namn'])
+    currency = row['Valuta']
+    if currency != 'SEK' and currency != 'EUR':
+        print("!!! Sale for unknown currency: " + row['Namn'] + currency)
         print("")
         return
     date = parse_date(row['\ufeff"Datum"'])
     buyer = row['Namn']
     brutto = row['Brutto']
     avgift = row['Avgift']
-    #countryCode = row['Köparens landskod']
-    countryCode = row['Landskod']
+    countryCode = row['Köparens landskod']
+    #countryCode = row['Landskod']
     country = row['Land']
 
     bruttoNumber = parse_to_positive_number(brutto)
@@ -126,16 +146,16 @@ def handle_sale(row, source):
 
     # print('')
     if (countryCode == 'SE'):
-        sale_sweden(date, buyer, bruttoNumber, avgiftNumberPositive, source)
+        sale_sweden(date, buyer, bruttoNumber, avgiftNumberPositive, source, currency)
         summarize_sale(date, buyer, bruttoNumber,
                        avgiftNumberPositive, source, countryCode, country, vat)
     elif (is_eu(countryCode)):
-        sale_eu(date, buyer, bruttoNumber, avgiftNumberPositive, source)
+        sale_eu(date, buyer, bruttoNumber, avgiftNumberPositive, source, currency)
         summarize_sale(date, buyer, bruttoNumber,
                        avgiftNumberPositive, source, countryCode, country, vat)
     else:
         sale_outside_eu(date, buyer, bruttoNumber,
-                        avgiftNumberPositive, source)
+                        avgiftNumberPositive, source, currency)
         summarize_sale(date, buyer, bruttoNumber,
                        avgiftNumberPositive, source, countryCode, country, 0)
 
@@ -355,19 +375,19 @@ with open('Download.CSV', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         if row['Saldoeffekt'].__contains__('Kreditering'):
-            if row['Till mejladress'] == 'info@jawbreaker.se':
+            if row['Till mejladress'] == 'info@jawbreaker.se' or row['Till mejladress'] == 'paypal@jawbreaker.se':
                 handle_kreditering_jawbreaker(row)
             elif row['Till mejladress'] == 'heavymetal@turborock.se' or row['Till mejladress'] == 'linniface@hotmail.com':
                 handle_kreditering_turborock(row)
             else:
-                print("!!!!! NOT IMPLEMENTED: {} !!!!!!".format(row['Till mejladress']))
+                print("!!!!! NOT IMPLEMENTED: {} !!!!!!".format(row))
         elif row['Saldoeffekt'].__contains__('Debitering'):
-            if row['Till mejladress'] == 'info@jawbreaker.se':
+            if row['Från mejladress'] == 'info@jawbreaker.se' or row['Från mejladress'] == 'paypal@jawbreaker.se':
                 handle_debitering_jawbreaker(row)
-            elif row['Till mejladress'] == 'heavymetal@turborock.se':
+            elif row['Från mejladress'] == 'heavymetal@turborock.se':
                 print("NOT IMPLEMENTED")
             else:
-                print("!!!!! NOT IMPLEMENTED: {} !!!!!!".format(row['Till mejladress']))
+                print("!!!!! NOT IMPLEMENTED: {} !!!!!!".format(row))
         else:
             print("!!!!! UNKNOWN TRANSACTION !!!!!!")
             print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
