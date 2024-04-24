@@ -320,6 +320,8 @@ def handle_kreditering_jawbreaker(row):
 def handle_kreditering_turborock(row):
     if row['Typ'].__contains__('Express Checkout-betalning'):
         handle_sale(row, 'Turborock.se')
+    elif row['Typ'].__contains__('Allmän betalning') or row['Typ'].__contains__('Mobilbetalning'):
+        handle_sale(row, 'Betalning')
     else:
         print("!!!!! UNKNOWN TRANSACTION TYPE (KREDITERING) !!!!!!")
         print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
