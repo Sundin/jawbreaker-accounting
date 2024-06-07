@@ -134,8 +134,10 @@ def handle_sale(row, source):
     buyer = row['Namn']
     brutto = row['Brutto']
     avgift = row['Avgift']
-    countryCode = row['Köparens landskod']
-    #countryCode = row['Landskod']
+    try:
+        countryCode = row['Köparens landskod']
+    except KeyError:
+        countryCode = row['Landskod']
     country = row['Land']
 
     bruttoNumber = parse_to_positive_number(brutto)
@@ -275,8 +277,10 @@ def handle_refund(row):
     buyer = row['Namn']
     brutto = row['Brutto']
     bruttoNumberPositive = parse_to_positive_number(brutto)
-    #countryCode = row['Köparens landskod']
-    countryCode = row['Landskod']
+    try:
+        countryCode = row['Köparens landskod']
+    except KeyError:
+        countryCode = row['Landskod']
 
     summarize_fee(date, 'Återbetalning till {}'.format(
         buyer), bruttoNumberPositive)
@@ -342,6 +346,8 @@ def handle_kreditering_turborock(row):
         handle_sale(row, 'Turborock.se')
     elif row['Typ'].__contains__('Allmän betalning') or row['Typ'].__contains__('Mobilbetalning'):
         handle_sale(row, 'Betalning')
+    elif row['Ärende'].__contains__("You've got money from Bandcamp"):
+        handle_digital_sales(row, 'Digital sales', 'Bandcamp')
     else:
         print("!!!!! UNKNOWN TRANSACTION TYPE (KREDITERING) !!!!!!")
         print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
