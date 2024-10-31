@@ -237,8 +237,8 @@ def handle_utbetalning(row):
 
 
 def refund_sweden(date, buyer, brutto):
-    moms = round(brutto * 0.2)
-    netto = round(brutto * 0.8)
+    moms = round(brutto * 0.2, 2)
+    netto = round(brutto * 0.8, 2)
     with open('paypal.si', 'a') as f:
         f.write('#VER "" "" {} "Refund - {}"\n'.format(date, buyer))
         f.write('{\n')
@@ -250,8 +250,8 @@ def refund_sweden(date, buyer, brutto):
 
 
 def refund_eu(date, buyer, brutto):
-    moms = round(brutto * 0.2)
-    netto = round(brutto * 0.8)
+    moms = round(brutto * 0.2, 2)
+    netto = round(brutto * 0.8, 2)
     with open('paypal.si', 'a') as f:
         f.write('#VER "" "" {} "Refund - {}"\n'.format(date, buyer))
         f.write('{\n')
@@ -338,7 +338,7 @@ def handle_kreditering_jawbreaker(row):
         return
     else:
         print("!!!!! UNKNOWN TRANSACTION TYPE (KREDITERING) !!!!!!")
-        print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
+        print(row['\ufeff"Datum"'], row['Typ'],row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
         print("")
 
 def handle_kreditering_turborock(row):
@@ -349,9 +349,7 @@ def handle_kreditering_turborock(row):
     elif row['Ärende'].__contains__("You've got money from Bandcamp"):
         handle_digital_sales(row, 'Digital sales', 'Bandcamp')
     else:
-        print("!!!!! UNKNOWN TRANSACTION TYPE (KREDITERING) !!!!!!")
-        print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
-        print("")
+        print("UNKNOWN TRANSACTION TYPE (KREDITERING): {} to {} ({})".format(row['Typ'], row['Namn'], row['\ufeff"Datum"']))
 
 def handle_debitering_jawbreaker(row):
     if (row['Ärende'].__contains__('Discogs') or row['Objektstitel'].__contains__('Discogs')) and row['Typ'].__contains__('Partneravgift'):
@@ -364,8 +362,11 @@ def handle_debitering_jawbreaker(row):
         handle_utbetalning(row)
     else:
         print("!!!!! UNKNOWN TRANSACTION TYPE (DEBITERING) !!!!!!")
-        print(row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
+        print(row['\ufeff"Datum"'], row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
         print("")
+
+def handle_debitering_turborock(row):
+    print("Not implemented: {} to {} ({})".format(row['Typ'], row['Namn'], row['\ufeff"Datum"']))
 
 # PROGRAM START
 
@@ -391,7 +392,7 @@ with open('Download.CSV', newline='') as csvfile:
             if row['Från mejladress'] == 'info@jawbreaker.se' or row['Från mejladress'] == 'paypal@jawbreaker.se':
                 handle_debitering_jawbreaker(row)
             elif row['Från mejladress'] == 'heavymetal@turborock.se':
-                print("NOT IMPLEMENTED")
+                handle_debitering_turborock(row)
             else:
                 print("!!!!! NOT IMPLEMENTED: {} !!!!!!".format(row))
         else:
