@@ -219,9 +219,8 @@ def handle_bandcamp_subscription(row):
         f.close()
 
 
-def handle_utbetalning(row):
+def handle_utbetalning(row, title):
     date = parse_date(row['\ufeff"Datum"'])
-    title = 'PayPal till SEB'
     brutto = row['Brutto']
     bruttoNumberPositive = parse_to_positive_number(brutto)
 
@@ -359,14 +358,17 @@ def handle_debitering_jawbreaker(row):
     elif row['Ärende'].__contains__('Label Account Subscription'):
         handle_bandcamp_subscription(row)
     elif row['Typ'].__contains__('Överföring påbörjad av användare') or row['Typ'].__contains__('Allmän överföring'):
-        handle_utbetalning(row)
+        handle_utbetalning(row, 'PayPal till SEB')
     else:
         print("!!!!! UNKNOWN TRANSACTION TYPE (DEBITERING) !!!!!!")
         print(row['\ufeff"Datum"'], row['Typ'], row['Namn'], row['Fakturanummer'], row['Ärende'])
         print("")
 
 def handle_debitering_turborock(row):
-    print("Not implemented: {} to {} ({})".format(row['Typ'], row['Namn'], row['\ufeff"Datum"']))
+    if row['Typ'].__contains__('Överföring påbörjad av användare') or row['Typ'].__contains__('Allmän överföring'):
+        handle_utbetalning(row, 'PayPal till Bokio')
+    else:
+        print("Not implemented: {} to {} ({})".format(row['Typ'], row['Namn'], row['\ufeff"Datum"']))
 
 # PROGRAM START
 
